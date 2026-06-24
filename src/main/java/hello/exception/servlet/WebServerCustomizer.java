@@ -32,5 +32,6 @@ public class WebServerCustomizer implements WebServerFactoryCustomizer<Configura
  * 여기에서 중요한 점이 있다.
  * -> 이전까지는 Exception 발생이던 sendError이던 WAS에서 오류 페이지를 자동으로 만들어 준 다음에 그걸 클라이언트에 응답을 내렸다.
  * 그러나 여기서 Exception 발생 혹은 sendError 발생 시, WAS에서 클라이언트로 바로 응답을 보내는 것이 아니라, WAS -> 필터 -> 서블릿 -> 인터셉터 -> 컨트롤러(에러 페이지 용)
- * 순으로 다시 컨트롤러를 호출한다는 것에 주의하자
+ * 순으로 다시 컨트롤러를 호출한다는 것에 주의하자.
+ * ※이때 WAS는 그냥 재요청을 하는 것이 아니라 request의 addAttribute를 통해서 어떤 오류 정보 인지 남아 놓는다.
  */
