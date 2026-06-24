@@ -1,0 +1,51 @@
+서블릿은 고객 친화적인 에러 페이지를 위한 기능을 제공한다. 
+1. Exception이 터져서 톰캣까지 전달되었을 때의 에러 페이지 기능 제공
+2. sendError()에 의한 에러 페이지 기능 제공
+-> 이 서블릿이 제공하는 기능을 사용하면 고객한테 친절한 에러 페이지를 커스터 마이징이 가능한다. 
+
+
+
+WebServerCustomizer 클래스를 보고 나는 아래와 같은 의문이 생겼다.
+Q. 분명히 강사는 순수 서블릿이 제공하는 에러페이지 커스터마이징 기능을 소개한다고 했는데 import된 패키지를 보면 죄다 spring이 제공하는
+기능을 사용해서 에러 페이지를 커스터마이징 하고 있지 않냐?
+
+A. 결론 부터 말하면 spring boot의 도움을 빌려서 순수 서블릿의 에러 페이지 커스터마이징 기능을 사용하고 있다.
+
+순서 서블릿 에러페이지(옛날 방식)
+-> 개발자가 직접 Tomcat(WAS)에 xml을 통해서 에러 오류 관련【설정】을 아래와 같이 해줘야 했다.
+
+<web-app>
+ <error-page>
+ <error-code>404</error-code>
+
+
+ <location>/error-page/404.html</location>
+
+
+ </error-page>
+
+
+ <error-page>
+ <error-code>500</error-code>
+
+
+ <location>/error-page/500.html</location>
+
+
+ </error-page>
+
+
+ <error-page>
+ <exception-type>java.lang.RuntimeException</exception-type>
+
+
+ <location>/error-page/500.html</location>
+
+
+ </error-page>
+</web-app>
+
+스프링 부트 방식(현대 방식)
+factory.addErrorPages(errorPage404,errorPage500,errorPageEx)를 해주면
+결국에는 내부적으로 Tomcat에 에러 관련 편안하게【설정】을 대신 해주는 것에 불과하다.
+
