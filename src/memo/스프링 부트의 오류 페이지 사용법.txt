@@ -1,0 +1,45 @@
+저번 시간까지는 서블릿/순수 스프링이 제공하는 필터/인터셉터 기능만으로 오류 페이지를 만들었다. 
+그러나 아래 코드처럼 오류 페이지를 일일이 등록하는 작업이 너무 번거롭다.(참고로 스프링 기능인 인터셉터도 아래의 오류 페이지가 등록된 WAS의 설정 정보를 바탕으로 오류 페이지 컨트롤러에 이동하여 오류 페이지를 만듬) 
+@Component
+public class WebServerCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
+
+    @Override
+    public void customize(ConfigurableWebServerFactory factory) {
+        // 404 에러 발생 시, "/error-page/404" 컨트롤러로 이동해라
+        ErrorPage errorPage404 = new ErrorPage(HttpStatus.NOT_FOUND, "/error-page/404");
+        // 500 에러 발생 시, "/error-page/500" 컨트롤러로 이동해라
+        ErrorPage errorPage500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error-page/500");
+        // RuntimeException 또는 그것의 자식 예외 발생 시, "/error-page/500" 컨트롤러로 이동해라
+        ErrorPage errorPageEx = new ErrorPage(RuntimeException.class, "/error-page/500");
+
+        // 에러 페이지 등록
+        factory.addErrorPages(errorPage404,errorPage500,errorPageEx);
+    }
+}
+또 우리는 예외 처리용 컨트롤러까지 만들어야 했다.
+
+그러나 스프링부트를 사용하면 위 과정을 전부 대신 등록을 해준다.
+1. WebServerCustomizer 기능
+-> 스프링 부트는 예를 들어 404 에러 발생 시, WebServerCustomizer에서 개발자가 new Error(404,"/error-page/404");와 같이 톰캣(WAS)에 이미 해당 에러에 대한
+설정이 없으면 "/error" 경로로 자동으로 호출되게 new Error()를 대신 자동 등록을 해준다.
+
+2.예외 치리용 컨트롤러 기능
+-> 스프링 부트는 BasicErrorController를 자동 등록하여 "/error" 요청에 대한 처리를 대신 해준다.
+
+그럼 개발자는 BasicErrorController이 제공하는 규칙과 우선순위를 고려해서 오류 페이지를 만들어 놓기만 하면 된다.
+-> 정적 뷰이면 resource/static, 동적 뷰이면 resource/templates에 오류 페이지를 만들면 된다(이건 BasicErrorController의 룰)
+
+뷰 선택 우선순위
+BasicErrorController 의 처리 순서
+1. 뷰 템플릿
+resources/templates/error/500.html
+resources/templates/error/5xx.html
+2. 정적 리소스( static , public )
+resources/static/error/400.html
+resources/static/error/404.html
+resources/static/error/4xx.html
+3. 적용 대상이 없을 때 뷰 이름( error )
+resources/templates/error.html
+
+->뷰 템플릿이 정적 리소스보다 우선순위가 높고, 404, 500처럼 구체적인 것이 5xx처럼 덜 구체적인 것 보다 우선순위가 높다.
+5xx, 4xx 라고 하면 500대, 400대 오류를 처리해준다
