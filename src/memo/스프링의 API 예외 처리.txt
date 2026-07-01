@@ -1,0 +1,15 @@
+지난 시간에는 서블릿 방식으로 API 예외 처리 방식을 배웠다.
+그러나 스프링은 서블릿 방식의 API 예외 처리 방식 그 위에서 더 편리하게 똑같은 기능을 사용할 수 있게 해놓았다.
+이번 시간에는 스프링이 제공하는 API 예외 처리 방식을 본격적으로 알아 볼 것이다.
+
+사전지식으로써,
+이전 오류 페이지 학습 시, 스프링 부트가 BasicErrorController와 WebServerCustomizer 클래스를 자동으로 등록을 해준다는
+것을 배웠다. 스프링 부트는 API 예외 처리에 대해서도 BasicErrorController와 WebServerCustomizer에 자동 등록을 해 놓았다.
+※json으로 반환 받기 위해서는 ACCEPT를 application/json으로 등록해야 하는 것을 절대 잊지 말자.
+
+그래서 @GetMapping("/api/members/{id}") 이 부분을 똑같이 실행을 하게 되면 스프링이 자동으로 제공하는 JSON 형식의
+API 에러 정보를 응답받을 수있음을 확인 가능하다.
+정확히는 BasicErrorController 안에 produces=json으로 만들어진 메서드가 이미 있기 때문이다.
+
+
+
