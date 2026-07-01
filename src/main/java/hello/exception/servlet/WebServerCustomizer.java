@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * 류 페이지를 등록하면 된다.
  */
 
-//@Component
+@Component
 public class WebServerCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
 
     @Override
