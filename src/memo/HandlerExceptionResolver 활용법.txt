@@ -1,0 +1,15 @@
+생각을 해보면 스프링의 예외 처리는 너무나도 복잡하다. 
+예외가 WAS까지가서 다시 재요청되고 /error 경로로 이동하고 Accept를 보고 오류를 페이지로 내야 하는지 API 응답으로 내야 하는지 판단하고 뭐 하여튼 왔다리 갔다리 한다.
+그러나 HandlerExceptionHandler를 활용하면 이러한 복잡한 과정없이 HandlerExceptionResolver만으로 깔끔하게 해결이 가능하다. 
+
+
+
+
+UserException 예외 발생 시 왔다 갔다 안 하는 이유
+-> UserHandlerExcpetionResovler에서 response.getWriter().write(result)이 부분이 포인트이다.
+우리는 기존에 response.sendError()를 통해서 예외 상태를 변화시켰다. 그러나 그 대신 response.getWriter()를 사용하였다.
+이건 단지 데이터를 HTTP Body에 데이터를 넣는 기능이다. 에러와 전혀 관련이 없다. 그로 WAS에 response에 전달이 되면 sendError()가 아니기 때문에 WAS 설정의 오류 정보를 뒤지지 않기 떄문에
+/error 경로로 다시 재요청이 되는 일이 없다.
+
+그러나 ExceptionResolver를 직접 구현하려니 너무 복잡하다. 이러한 문제점을 스프링이 제공하는 ExcpetionResolver를 활용하면 되게 편하게 사용이 가능하다.
+다음 시간부터는 이것들에 대해 학습할 것이다.
