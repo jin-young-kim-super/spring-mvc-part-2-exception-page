@@ -1,0 +1,69 @@
+지난 시간에 스프링이 제공하는 BasicErrorController에서 JSON 형식의 예외 응답을 학습하였다. 
+근데 하나 문제점이 있다. BasicErrorController를 이용해서 JSON 형식의 예외 응답을 받게 되면 그 안에 단순한 statuscode 정보 등, 즉 BasicErrorController가 제공하는 기본 오류 정보가 제공이
+되었다. 그러나 API의 경우 각 요청마다 예외 응답이 서로 다른 경우가 많다. 
+이러한 문제점에서 스프링의 대부분의 경우 서로 약속한 API 예외 에러를 복잡한 JSON 형식의 에러 응답 작성을 도와주는 @ExceptionHandler를 제공한다.
+대부분의 경우, BasicErrorController의 기본 기능이 아닌, @ExceptionHandler를 통해 API 에러를 처리한다. 
+그리고 그 기능을 지원하는 것이 바로 스프링의 (Handler)ExceptionResolver이다.
+
+
+목표
+예외 발생시(response.sendError가 아님), 즉 컨트롤러 실행 중 컨트로러에서 잡히지 못 하고 예외 객체가 WAS에 전달이 되면
+WAS는 반드시 무조건 서버 내부 문제라고 판단하고 Interval Server Error 500으로 처리를 해 버린다. 그러나 예를 들어
+IllegalExcpetion, 즉 사용자가 입력값을 잘못 입력해서 터진 예외 객체의 경우 500이 아니라, 4xx로 처리해줘야 한다.
+이렇게 WAS에 던져지는 예외 객체를 상황에 따라 500,400 등으로 변환하고 싶은 경우에 어떻게 하는지에 대해서 학습할 것이다
+
+HandlerExceptionResolver의 반환값의 의미
+1. return new ModelAndView(빈 ModelAndView)
+-> 뷰를 렌더링하지 않고 WAS에 정상 흐름 요청. 그러나 코드를 보면 알겠지만 이떄에 response.sendError()도 같이 적었기 때문에
+WAS는 에러라고 판단하고 재요청을 한다. 그 과정에서 WAS에 설정된 오류 정보를 가지고 해당 컨트롤러(BasicErrorController 등)에 재요청을 한다.
+
+
+
+2. return new ModelAndView(Model과 View를 지정)
+-> 만약 Model과 View를 지정하면 해당 뷰를 렌더링해서 클라이언트에 반환을 한다(이떄 response.sendError()를 사용하면 안 된다)
+
+
+
+3. return null
+-> 이떄에는 발생된 예외 객체를 처리할 수 있는 또다른 ExceptionResolver가 없는지 확인한다. 만약에 없다면 WAS에 500 예외 객체로 비정상 요청으로써 전달이 된다.
+만약 WAS에 오류 정보에 대한 컨트롤러를 매핑을 해놓지 않았다면 WAS는 클라이언트에 500(Interval Server Error)를 클라이언트에 반환을 한다.
+
+
+ExceptionResolver의 활용법(크게 보면, 우리가 ApiExceptionController에서 했던 짓을 ExceptionResovler로 따로 빼서 코드를 깔끔하게 유지하기 위함이다. 비지니지 로직이 아닌 공통 기술 지원 로직은
+되도록이면 이렇게 따로 뺴서 수동 등록 사용하는 것이 김영한의 실무 팁이였던 것을 떠올리자)
+※참고로 우리가 헷갈리면 안 되는 것이 실무에서는 BasicErrorController와 WAS 오류 정보를 스프링 부트로 자동 등록 시켜서 사용하기 때문에 ErrorPageController 같은 건 실무에서는 존재하지 않는다.
+여기서는 어디까지나 학습을 위해서 만들어 놓은 것일 뿐! 그리고 다음 시간에 ExceptionResolver 활용법에 대해 깊이 있게 공부할 것이다.
+
+1. 최소 발생한 예외 객체를 response.sendError를 통해 내가 원하는 오류 상태로 변경할 때 사용
+-> 【예외 상태 변환】을 가능하게 해준다
+
+2. return new ModelAndView를 통해서 스프링 부트 혹은 WAS에서 제공하는 오류 페이지 흐름에서 벗어나서 새로운 오류 화면을 렌더링해서 클라이언트에 던지고 싶을 떄 사용
+-> 스프링 부트는 기본적으로 WAS에 오류 정보를 설정하여 /error 경로의 오류 컨트롤러(BasicController)를 호출하여 스프링의 규칙에 따라서 오류 페이지를 찾아서 반환을 하지만 위 기능을 사용하면
+그런 흐름에서 벗어나서 새로운 오류 화면을 던질 수가 있다. 이건 특정한 예외 상황에서 개발자가 기존에 있던 오류 페이지를 던지는 것이 아니라 새로운 형식의 오류 페이지를 던지고 싶을 때 주로 사용.
+만약 스프링 부트가 WAS에 오류 정보를 설정하지 않았따면 그떄는 WAS에서 기본적으로 제공하는 오류 페이지를 던진다.
+※이런 점에서 ExceptionResolver는 비단 API 응답만을 위해 존재하는 것이 아니라 오류 페이지 응답을 위해서도 존재하는 것이다.
+
+
+3. response.getWriter().print("error")를 통해 HTTP BOdy에 직접 넣어서 API 응답으로 보낼 수도 있다.
+-> 이떄에는 반드시 반환이 JSON임을 설정해줘야 한다.
+
+
+ExceptionResovler 등록 시 주의점
+@Override
+public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver>
+resolvers) {
+ resolvers.add(new MyHandlerExceptionResolver());
+}
+-> configureHandlerExceptionResolvers(..) 를 사용하면 스프링이 기본으로 등록하는 ExceptionResolver 가 제거되므로 주의!!!
+반드시 extendHandlerExceptionResolvers 를 사용하자.
+
+
+
+
+
+
+
+
+
+
+

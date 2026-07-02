@@ -21,6 +21,13 @@ public class ApiExceptionController {
             // -> 이 시점에서는 아직은 서블릿 방식으로 예외를 처리하고 있음에 주의하자
             throw new RuntimeException("잘못된 사용자");
         }
+
+        // 이 예외 객체가 WAS에 그대로 전달이 되면 500으로 처리돼 버린다
+        // -> ExceptionHandler를 적용하지 않았다는 가정 하에!
+        if(id.equals("bad")) {
+            throw new IllegalArgumentException("잘못된 입력값");
+        }
+
         return new MemberDto(id,"hello" + id);
     }
 
