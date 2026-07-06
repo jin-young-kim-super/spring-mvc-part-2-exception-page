@@ -1,0 +1,22 @@
+@ControllerAdvice, @RestControllerAdvice를 사용하면 하나의 컨트롤러에 정상 코드와  예외 코드를 분리할 수가 있다.
+-> 참고로 @ControllerAdvice와 @RestControllerAdvice는 똑같은 것이다.
+@ResponseBody가 붙냐 안 붙냐의 차이!!!
+
+만약 @ControllerAdvice에 적용한 컨트롤러를 지정해 주지 않으면 모든 컨트롤러에 대해 글로벌 적용이 된다.
+
+
+
+대상 컨트롤러 지정 방법
+// Target all Controllers annotated with 【@RestController】
+@ControllerAdvice(annotations = RestController.class)
+public class ExampleAdvice1 {}
+
+
+// Target all Controllers within specific 【packages】
+@ControllerAdvice("org.example.controllers")
+public class ExampleAdvice2 {}
+
+
+// Target all Controllers assignable to specific 【classes】
+@ControllerAdvice(assignableTypes = {ControllerInterface.class, AbstractController.class})
+public class ExampleAdvice3 {}
