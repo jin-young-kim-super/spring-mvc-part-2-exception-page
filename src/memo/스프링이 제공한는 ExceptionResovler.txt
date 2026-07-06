@@ -34,3 +34,20 @@ public String responseStatusEx2() {
 그러나 이것 또한 역시 response.sendError를 사용하기에 WAS가 재요청을 한다.
 
 
+- ExceptionHandlerExceptionResolver(@ExcpetionHandler) -
+스프링이 제공하는 ExceptionResolver를 사용하기 이전에는 우리가 직접 ExceptionResovler를 구현을 하였다.
+그러나 이는 매우 복잡하고, 또한 ResponseStatusExcpetionResolver, DefaultHandlerExceptionResolver를 포함하여 이러한 것들은 response.sendError를 사용하기 때문에
+스프링 부트가 제공하는 BasicErrorController가 제공하는 API 응답 오류 양식을 따른다.
+이 과정에서 항상 WAS가 재요청을 하는 등 과정이 복잡하였다. 우리는 이를 해결하기 위하여 UserHandelrExcpetionHandler를 직접 구현하였다.
+response.getWriter()를 사용하여 해결하여서 재요청 문제는 해결하였지만 return new ModelAndVIew를 강제적으로 반환해야 했다. API 오류 응답 에러인데 return new ModelaAndView
+를 반환하는 것은 뭔가 이상하다.
+그리고 API 오류 응답의 형태는 매우 다양하다. 예를 들어 회원 컨트롤러와 주문 컨트롤러에서 발생하는 API 오류 응답을 각각 다르게 만드는 것은 기존 방식으로는 매우 어렵다. 만약 한다고 하면은
+어떤 컨트롤러에서 왔는지 if 문등을 덕지덕지 발라야 한다.
+그래서 우리가 기존에 배운 방식의 ExceptionResolver로는 한계가 있다.
+ExceptionHandlerExceptionResolver는 이러한 문제점을 해결해준다
+(참고로 오류 페이지 화면 같은 경우에는 스프링부트의 BasicErrorController의 방식을 사용하는 것이 좋다. 왜냐하면 오류 화면 페이지는 다양할 필요가 없기 때문이다)
+
+
+
+
+
