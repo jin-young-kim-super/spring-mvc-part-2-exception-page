@@ -1,0 +1,29 @@
+스프링 부트가 기본으로 제공하는 ExceptionResolver 는 다음과 같다.
+HandlerExceptionResolverComposite 에 다음 순서로 등록
+1. ExceptionHandlerExceptionResolver(대부분 이걸로 API 오류 응답 처리, 가장 중요해서 뒷쪽에서 자세히 학습하는 걸로 하자)
+2. ResponseStatusExceptionResolver(@ResponseStatus 애노테이션을 처리)
+3. DefaultHandlerExceptionResolver
+-> 2,3번은 잘 사용하지않아 그렇게 중요하지 않으니 먼저 2,3를 빠르게 이번 시간에는 학습한다.
+
+
+
+- ResponseStatusExceptionResovler -
+
+@ResponseStatus(code= HttpStatus.BAD_REQUEST,reason = "잘못된 요청 오류")
+public class BadRequestException extends RuntimeException{
+}
+-> @ResponseStatus를 보고 ResponseStatusExceptionResolver가 선택이 된다.
+여기에서의 핵십은 RuntimException에러의 httpstatus 500을 Resovler에서 가로채서 response.sendError에서 우리가 설정한 HttpStatus.BAD_REQUEST로 예외를 바꿔치기 한다.
+그러나 이건 WAS에서 다시 재요청을 발생시킨다.
+
+
+@ResponseStatus는 수정할 수 없는 외부 예외라던지 그런 곳에서는 사용이 불가능하다.
+그럴 떄에는 다이렉트로 아래와 같이 throw new ResponseStatusException을 사용하면 된다. 이것도 ResponseStatusExcpetionResolver가 처리해준다.
+ex)
+@GetMapping("/api/response-status-ex2")
+public String responseStatusEx2() {
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"error_bad",new IllegalArgumentException());
+}
+
+
+- DefaultHandlerExceptionResolver -
